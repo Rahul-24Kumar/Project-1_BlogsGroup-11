@@ -4,7 +4,8 @@
   "description": "Repository for backend cohort - Thorium",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "starts": "npx nodemon src/index.js"
   },
   "repository": {
     "type": "git",
@@ -17,13 +18,11 @@
   },
   "homepage": "https://github.com/sabihak89/thorium#readme",
   "dependencies": {
-    "axios": "^0.26.1",
     "body-parser": "^1.19.2",
     "cors": "^2.8.5",
-    "email-validator": "^2.0.4",
     "express": "^4.17.3",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.21",
+    "module": "^1.2.5",
     "moment": "^2.29.1",
     "mongoose": "^6.2.6",
     "nodemon": "^2.0.15",

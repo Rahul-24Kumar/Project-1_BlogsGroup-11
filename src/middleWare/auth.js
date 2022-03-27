@@ -1,69 +1,40 @@
 const jwt = require("jsonwebtoken");
-const blogsModel = require("../models/blogsModel");
+const blogModel = require("../models/blogsModel")
 
-// ### AUTHENTICATE:
 
-const authenticate = function (req, res, next) {
-   try {
-      let token = req.headers["x-api-key"];
-      if (!token) return res.status(401).send({ status: false, msg: "token must be present" });
-      // this verify the token that token is correct or not
-      let decodedToken = jwt.verify(token, "secret-key");
-      if (!decodedToken)
-         return res.status(400).send({ status: false, msg: "token is invalid" });
-      // req.user =  decodedToken.authorId
-
-      next()
-   } 
-   catch (err) {
-      res.status(500).send({ status: false, Error: err });
-   }
+let authenticate = async function (req, res, next) {
+  try {
+    let token = req.headers['x-api-key']
+    if (!token) return res.status(400).send({ status: false, msg: "please provide token" })
+    let validateToken = jwt.verify(token, "Secret Key_group11")
+    if (!validateToken) return res.status(401).send({ status: false, msg: "authentication failed" })
+    next()
+  }
+  catch (err) {
+    console.log("This is the error :", err.message)
+    res.status(500).send({ msg: "Error", error: err.message })
+  }
 }
 
-// ### AUTHORISE:
+let authorise = async function (req, res, next) {
+  let id = req.params.blogId
+  let jwtToken = req.headers['x-api-key']
+  try {
+    let blogs = await blogModel.findById(id)
+    if (!blogs) return res.status(404).send({ status: false, msg: "please provide valid blog ID" })
+    if (blogs.isDeleted == true) return res.status(404).send({ status: false, msg: "no such blog found" })
 
-// ### AUTHORISING BLOG_ID:
+    let verifiedToken = jwt.verify(jwtToken, "Secret Key_group11")
+    if (verifiedToken.authorId != blogs.authorId) return res.status(403).send({ status: false, msg: "unauthorize access " })
 
-   const authorise = async function (req, res, next) {
-      try {
-         // comapre the logged in user's id and the id in request
-         let token = req.headers["x-api-key"];
-         let blogId = req.params.blogId;
-         let blogDetails = await blogsModel.findById(blogId)
-         let authorId = blogDetails.authorId
-         let decodedToken = jwt.verify(token, "secret-key");
-         if (!decodedToken)
-            return res.status(400).send({ status: false, msg: "token is invalid" });
-         let decoded = decodedToken.userId
-         if (authorId != decoded) res.status(400).send({ status: false, msg: "anthentication denied" })
-         next()
-      } 
-      catch (err) {
-         res.status(500).send({ status: false, Error: err });
-      }
-   }
-
-   // ### AUTHORISING AUTHOR_ID:
-   
-      const verifyAuthorId = async function (req, res, next) {
-         try {
-            let token = req.headers["x-api-key"]
-            let authodid = req.query.authorId
-            let decodedToken = jwt.verify(token, "secret-key");
-            if (!decodedToken)
-               return res.status(400).send({ status: false, msg: "token is invalid" });
-            let decoded = decodedToken.userId
-            if (authodid != decoded) res.status(400).send({ status: false, msg: "anthentication denied" })
-            next()
-         }
-      catch (err) {
-         res.status(500).send({ status: false, Error: err });
-      }
-   }
+    next()
+  }
+  catch (err) {
+    console.log("This is the error :", err.message)
+    res.status(500).send({ msg: "Error", error: err.message })
+  }
+}
 
 
-
-
-      module.exports.authenticate = authenticate
-      module.exports.authorise = authorise
-      module.exports.verifyAuthorId = verifyAuthorId
+module.exports.authenticate = authenticate
+module.exports.authorise = authorise
